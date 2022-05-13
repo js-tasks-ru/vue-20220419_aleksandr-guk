@@ -19,10 +19,14 @@ export default defineComponent({
 
   computed: {
     localDate() {
-      return new Date(this.date).toLocaleDateString(navigator.language)
+      return new Date(this.date).toLocaleString(navigator.language, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
     },
     ISODate() {
-      return new Date(this.date).toISOString();
+      return new Date(this.date).toISOString().substr(0, 10);
     }
   },
   template: `
