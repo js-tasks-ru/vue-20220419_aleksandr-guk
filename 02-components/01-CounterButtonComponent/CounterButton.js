@@ -8,7 +8,6 @@ export default defineComponent({
       default: 0
     },
   },
-
   // Компонент должен иметь входной параметр
 
   // Шаблон лучше держать максимально простым, а логику выносить в методы
@@ -16,7 +15,7 @@ export default defineComponent({
   // Шаблон потребуется отредактировать
   methods: {
     btnClickHandler(count) {
-      this.$emit('update', count+1);
+      this.$emit('update:count', count+1);
     }
   },
   template: `<button @click="btnClickHandler(count)" type="button">{{count}}</button>`
