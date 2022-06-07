@@ -1,18 +1,19 @@
 <template>
-  <div class="dropdown dropdown_opened">
-    <button type="button" class="dropdown__toggle dropdown__toggle_icon">
-      <ui-icon icon="tv" class="dropdown__icon" />
-      <span>Title</span>
+
+  <div class="dropdown" :class="dropdownState">
+    <select v-show="false" v-model="value">
+      <option v-for="option in options" :value="option.value">{{ option.text }}</option>
+    </select>
+    <button @click="toggleDropDown" type="button" class="dropdown__toggle" :class="[buttonToggleIconClass]">
+      <ui-icon v-if="selectedOption && selectedOption.icon"  :icon="selectedOption.icon" class="dropdown__icon"/>
+      <span>{{ selectedOption ?  selectedOption.text : title}}</span>
     </button>
 
-    <div class="dropdown__menu" role="listbox">
-      <button class="dropdown__item dropdown__item_icon" role="option" type="button">
-        <ui-icon icon="tv" class="dropdown__icon" />
-        Option 1
-      </button>
-      <button class="dropdown__item dropdown__item_icon" role="option" type="button">
-        <ui-icon icon="tv" class="dropdown__icon" />
-        Option 2
+    <div v-show="!!dropdownState" class="dropdown__menu" role="listbox">
+      <button @click="()=>setOption(option)" v-for="option in options" class="dropdown__item" :class="buttonOptionIconClass"
+              :data-value="option.value" role="option" type="button">
+        <ui-icon v-if="!!option.icon" :icon="option.icon" class="dropdown__icon"/>
+        {{ option.text }}
       </button>
     </div>
   </div>
@@ -23,12 +24,64 @@ import UiIcon from './UiIcon';
 
 export default {
   name: 'UiDropdown',
-
-  components: { UiIcon },
+  props: {
+    options: {
+      type: Array,
+      required: true
+    },
+    modelValue: String,
+    title: {
+      type: String,
+      required: true
+    }
+  },
+  computed: {
+    optionHasIcon() {
+      return !!this.options.some(opt => opt.icon);
+    },
+    buttonToggleIconClass() {
+      return this.optionHasIcon ? 'dropdown__toggle_icon' : '';
+    },
+    buttonOptionIconClass() {
+      return this.optionHasIcon ? 'dropdown__item_icon' : '';
+    },
+    value: {
+      get() {
+        return this.modelValue
+      },
+      set(value) {
+        this.$emit('update:modelValue', value)
+      }
+    },
+    selectedOption(self) {
+      return this.options.find(option => option.value === self.value) || null;
+    }
+    }
+  ,
+  data() {
+    return {
+      dropdownState: '',
+      dropdownTitle: this.title,
+      dropdownIcon: null
+    }
+  },
+  components: {UiIcon},
+  methods: {
+    toggleDropDown() {
+      this.dropdownState = this.dropdownState === 'dropdown_opened' ? '' : 'dropdown_opened';
+    },
+    setOption(option) {
+      this.dropdownTitle = option.text;
+      this.dropdownIcon = option.icon;
+      this.value = option.value;
+      this.toggleDropDown();
+    }
+  }
 };
 </script>
 
 <style scoped>
+
 .dropdown {
   position: relative;
   display: inline-block;
@@ -84,7 +137,7 @@ export default {
   transform: rotate(180deg);
 }
 
-.dropdown__menu {
+.dropdown_opened .dropdown__menu {
   background-clip: padding-box;
   border-radius: 0 0 8px 8px;
   border: 2px solid var(--blue);
@@ -131,11 +184,16 @@ export default {
   position: relative;
 }
 
+.dropdown__icon {
+  display: none;
+}
+
 .dropdown__item_icon .dropdown__icon,
 .dropdown__toggle_icon .dropdown__icon {
   position: absolute;
   top: 50%;
   left: 16px;
   transform: translate(0, -50%);
+  display: block;
 }
 </style>
