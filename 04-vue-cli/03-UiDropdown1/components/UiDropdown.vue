@@ -4,13 +4,13 @@
     <select v-show="false" v-model="value">
       <option v-for="option in options" :value="option.value">{{ option.text }}</option>
     </select>
-    <button @click="toggleDropDown" type="button" class="dropdown__toggle" :class="[buttonToggleIconClass]">
+    <button @click="toggleDropDown" type="button" class="dropdown__toggle" :class="{'dropdown__toggle_icon':optionHasIcon}">
       <ui-icon v-if="selectedOption && selectedOption.icon"  :icon="selectedOption.icon" class="dropdown__icon"/>
       <span>{{ selectedOption ?  selectedOption.text : title}}</span>
     </button>
 
     <div v-show="!!dropdownState" class="dropdown__menu" role="listbox">
-      <button @click="()=>setOption(option)" v-for="option in options" class="dropdown__item" :class="buttonOptionIconClass"
+      <button @click="setOption(option)" v-for="option in options" class="dropdown__item" :class="{'dropdown__item_icon':optionHasIcon}"
               :data-value="option.value" role="option" type="button">
         <ui-icon v-if="!!option.icon" :icon="option.icon" class="dropdown__icon"/>
         {{ option.text }}
@@ -37,13 +37,7 @@ export default {
   },
   computed: {
     optionHasIcon() {
-      return !!this.options.some(opt => opt.icon);
-    },
-    buttonToggleIconClass() {
-      return this.optionHasIcon ? 'dropdown__toggle_icon' : '';
-    },
-    buttonOptionIconClass() {
-      return this.optionHasIcon ? 'dropdown__item_icon' : '';
+      return this.options.some(opt => opt.icon);
     },
     value: {
       get() {

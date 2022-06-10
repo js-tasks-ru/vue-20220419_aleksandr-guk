@@ -14,9 +14,11 @@ export default {
 
   data() {
     return {
-      toasts: []
+      toasts: [],
+      lastId: -1
     }
   },
+
   methods: {
     success(message, timeout = 5000) {
       this.addToast('success', message, timeout)
@@ -25,13 +27,13 @@ export default {
       this.addToast('error', message, timeout)
     },
     addToast(type, message, timeout) {
-      const timestamp = Date.now();
-      const toastObj = {type, message, timestamp};
+      const id = ++this.lastId;
+      const toastObj = {type, message, id};
       this.toasts.push(toastObj);
-      setTimeout(()=>this.removeToastByTimeout(timestamp), timeout);
+      setTimeout(()=>this.removeToast(id), timeout);
     },
-    removeToastByTimeout(timestamp) {
-      this.toasts = this.toasts.filter(t=>t.timestamp !== timestamp );
+    removeToast(id) {
+      this.toasts = this.toasts.filter(t=>t.id !== id );
     }
   }
 };
