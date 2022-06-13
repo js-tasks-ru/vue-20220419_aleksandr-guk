@@ -2,7 +2,7 @@
   <div class="wrapper">
     <meetups-header />
     <main class="main">
-      <div>CURRENT PAGE</div>
+      <router-view></router-view>
     </main>
     <meetups-footer />
   </div>
@@ -19,6 +19,11 @@ export default {
     MeetupsFooter,
     MeetupsHeader,
   },
+  data() {
+    return {
+      currentPath: location.pathname
+    }
+  }
 };
 </script>
 
