@@ -1,15 +1,66 @@
 <template>
   <label class="checkbox">
-    <input type="checkbox" class="checkbox__input" />
+    <input
+           v-bind="$attrs"
+           v-model="customModel"
+           type="checkbox"
+           class="checkbox__input" />
     <span class="checkbox__box"></span>
-    Label Text
+    <slot/>
   </label>
 </template>
 
 <script>
 export default {
   name: 'UiCheckbox',
+  props: {
+    modelValue : [Boolean, Array, Set]
+  },
+  inheritAttrs: false,
+  computed: {
+    customModel: {
+      get() {
+        return this.modelValue;
+      },
+      set(value) {
+        this.$emit('update:modelValue', value)
+      }
+    },
+    modelType() {
+      if ( typeof this.customModel === "boolean") {
+        return 'boolean';
+      }
+      if ( this.customModel instanceof Array ) {
+        return 'array';
+      }
+      if ( this.customModel instanceof Set ) {
+        return 'set';
+      }
+      return null;
+    }
+  },
+  methods: {
+    setValue() {
+      const inputValue = this.$refs.input?.value;
+      if ( this.modelType === 'array' ) {
+        this.customModel = this.customModel.find(elem => elem === inputValue) ?
+                           this.customModel.filter((elem => elem !== inputValue)) :
+                           [...this.customModel, inputValue]
+        return;
+      }
+
+      if ( this.modelType === 'set' ) {
+        let set = new Set([...this.customModel])
+        this.customModel.has(inputValue) ? set.delete(inputValue) : set.add(inputValue);
+        this.customModel = set;
+      }
+      if ( this.modelType === 'boolean' ) {
+        this.customModel = this.customModel === false;
+      }
+    }
+  }
 };
+
 </script>
 
 <style scoped>
