@@ -4,7 +4,11 @@
             :test="customModel"
             ref="input"
 
-            :type="type"><template v-if="$slots['left-icon']" #left-icon><ui-icon class="icon icon-search" icon="search"></ui-icon></template></ui-input>
+            :type="type">
+    <template v-for="slotName of Object.keys($slots)" #[slotName]>
+      <slot :name="slotName"/>
+    </template>
+  </ui-input>
 </template>
 
 <script>
