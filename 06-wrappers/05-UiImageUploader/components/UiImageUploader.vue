@@ -1,15 +1,103 @@
 <template>
   <div class="image-uploader">
-    <label class="image-uploader__preview image-uploader__preview-loading" style="--bg-url: url('/link.jpeg')">
-      <span class="image-uploader__text">Загрузить изображение</span>
-      <input type="file" accept="image/*" class="image-uploader__input" />
+    <label @click="remove" class="image-uploader__preview" :class="{'image-uploader__preview-loading': isLoading}"
+           :style="bgUrl">
+      <span class="image-uploader__text">{{ text }}</span>
+      <input ref="input" v-bind="$attrs" @change="upload" type="file" accept="image/*" class="image-uploader__input"/>
     </label>
   </div>
 </template>
 
 <script>
+const texts = {
+  loading: 'Загрузка...',
+  empty: 'Загрузить изображение',
+  loaded: 'Удалить изображение'
+}
 export default {
   name: 'UiImageUploader',
+  inheritAttrs: false,
+  props: {
+    preview: String,
+    uploader: Function
+  },
+  data() {
+    return {
+      localPreview: null,
+      isLoading: false,
+      text: texts[this.getState()]
+    }
+  },
+  computed: {
+    bgUrl() {
+      if ( this.localPreview ) {
+        return `--bg-url: url('${this.localPreview}')`
+      }
+      return this.preview ? `--bg-url: url('${this.preview}')` : '--bg-url: var(--default-cover);';
+    }
+  },
+  methods: {
+    remove($event) {
+      if ( this.getState() === 'loaded' ) {
+        $event.preventDefault();
+        this.setEmptyState();
+      }
+    },
+
+    async upload($event) {
+      try {
+        const input = $event.target;
+        const file = input.files[0];
+        const image = URL.createObjectURL(file);
+        this.setLoadingState(image, file);
+        if ( !this.uploader ) {
+          this.setLoadedState('loaded', this.localPreview);
+          return;
+        }
+        const response = await this.uploader(file);
+        this.$emit('upload', response);
+        this.setLoadedState(response.image);
+
+      } catch (e) {
+        this.setEmptyState(e);
+      }
+    },
+
+    setEmptyState(error) {
+      const input = this.$refs.input;
+      input.value = '';
+      this.isLoading = false;
+      this.localPreview = null;
+      this.$emit('remove');
+      this.text = texts['empty'];
+      if ( error ) {
+        this.$emit('error', error);
+      }
+    },
+    setLoadingState(image, file) {
+      this.isLoading = true;
+      this.localPreview = image;
+      this.text = texts['loading'];
+      this.$emit('select', file);
+    },
+    setLoadedState(image) {
+      this.isLoading = false;
+      this.text = texts['loaded']
+      this.localPreview = image;
+    },
+
+    getState() {
+      if ( this.isLoading ) {
+        return 'loading';
+      }
+      if ( this.preview || this.localPreview ) {
+        return 'loaded';
+      }
+      if ( !this.preview ) {
+        return 'empty';
+      }
+    }
+  }
 };
 </script>
 
